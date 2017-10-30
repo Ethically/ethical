@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/components/Redirect.js"],"names":[],"mappings":";;;;;;AAAA;;;;AACA;;;;kBAEe,MAAQ,uDAAU,IAAG,aAAb,G","file":"Redirect.js","sourcesContent":["import React from 'react'\nimport { Redirect } from 'react-router'\n\nexport default () => ( <Redirect to=\"/redirected\" /> )\n"]}

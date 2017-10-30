@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/components/Home.js"],"names":[],"mappings":";;;;;;AAAA;;;;AACA;;;;kBAEe,MAAQ;AAAA;AAAA;AAAA;AAAA,C","file":"Home.js","sourcesContent":["import React from 'react'\nimport { connect } from 'react-redux'\n\nexport default () => ( <page>Hello from home!</page> )\n"]}

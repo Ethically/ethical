@@ -1,0 +1,131 @@
+{
+    "name": "ethical",
+    "version": "0.0.0",
+    "description": "The Ethical framework mono repo.",
+    "main": "index.js",
+    "scripts": {
+        "test": "NODE_ENV=test nyc --all --reporter=text --reporter=html --reporter=cobertura mocha -t 30000  **/*.spec.js",
+        "build": "npm run build-client && npm run transpile",
+        "build-client": "rollup --config client/init/rollup.dev.js && rollup --config client/init/rollup.prod.js",
+        "transpile": "node ./transpile.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "async-exit-hook": "^2.0.1",
+        "babel-core": "^6.26.0",
+        "babel-polyfill": "^6.26.0",
+        "chai-spies": "^0.7.1",
+        "clone": "^2.1.1",
+        "enzyme": "^3.2.0",
+        "fs-extra": "^4.0.2",
+        "fs-promise": "^2.0.3",
+        "glob": "^7.1.2",
+        "graphql": "^0.11.7",
+        "jsdom": "^11.5.1",
+        "koa": "^2.4.1",
+        "koa-compose": "^4.0.0",
+        "lodash": "^4.17.4",
+        "mime-types": "^2.1.17",
+        "minimatch": "^3.0.4",
+        "mock-browser": "^0.92.14",
+        "node-fetch": "^1.7.3",
+        "nsfw": "^1.0.16",
+        "object-extend": "^0.5.0",
+        "prop-types": "^15.6.0",
+        "react": "^16.2.0",
+        "react-dom": "^16.2.0",
+        "react-helmet": "^5.2.0",
+        "react-redux": "^5.0.6",
+        "react-router-dom": "^4.2.2",
+        "recursive-readdir-sync": "^1.0.6",
+        "redux": "^3.7.2",
+        "require-hacker": "^3.0.1",
+        "rollup": "^0.52.0",
+        "rollup-plugin-babel": "^3.0.2",
+        "rollup-plugin-commonjs": "^8.2.6",
+        "rollup-plugin-node-builtins": "^2.1.2",
+        "rollup-plugin-node-resolve": "^3.0.0",
+        "rollup-plugin-uglify": "^2.0.1",
+        "server-destroy": "^1.0.1",
+        "vinyl": "^2.1.0"
+    },
+    "devDependencies": {
+        "babel-plugin-istanbul": "^4.1.5",
+        "babel-plugin-transform-class-properties": "^6.24.1",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "babel-plugin-transform-runtime": "^6.23.0",
+        "babel-preset-env": "^1.6.1",
+        "babel-preset-react": "^6.24.1",
+        "chai": "^4.1.2",
+        "curl": "^0.1.4",
+        "mocha": "^4.0.1",
+        "nyc": "^11.3.0"
+    },
+    "nyc": {
+        "require": [
+            "babel-register"
+        ],
+        "sourceMap": false,
+        "instrument": false
+    },
+    "babel": {
+        "env": {
+            "node": {
+                "presets": [
+                    "react"
+                ],
+                "plugins": [
+                    [
+                        "transform-object-rest-spread",
+                        {
+                            "useBuiltIns": true
+                        }
+                    ]
+                ],
+                "sourceMap": "inline",
+                "sourceRoot": "node_modules/ethical"
+            },
+            "test": {
+                "presets": [
+                    [
+                        "env",
+                        {
+                            "targets": {
+                                "browsers": [
+                                    "ie >= 11"
+                                ]
+                            },
+                            "debug": false,
+                            "useBuiltIns": true
+                        }
+                    ],
+                    "react"
+                ],
+                "plugins": [
+                    "transform-runtime",
+                    [
+                        "istanbul",
+                        {
+                            "include": [
+                                "**/*.js"
+                            ],
+                            "exclude": [
+                                "**/*.spec.js"
+                            ]
+                        }
+                    ],
+                    [
+                        "transform-object-rest-spread",
+                        {
+                            "useBuiltIns": true
+                        }
+                    ],
+                    "transform-class-properties"
+                ],
+                "sourceMap": "inline",
+                "sourceRoot": "node_modules/ethical"
+            }
+        }
+    }
+}

@@ -1,0 +1,1 @@
+{"version":3,"sources":["../../src/reducers/index.js"],"names":["welcome"],"mappings":";;;;;;AAAA;;;;;;kBAEgB,EAAEA,0BAAF,E","file":"index.js","sourcesContent":["import welcome from '../reducers/welcome.js'\n\nexport default ({ welcome })\n"]}
