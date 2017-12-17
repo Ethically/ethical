@@ -13,11 +13,11 @@ const {
 } = require('../../index.js')
 
 const appModule = join(process.cwd(), 'app.js')
-const testFile = join('~', 'test', 'files', 'a.js')
+const testFile = join('&', 'test', 'files', 'a.js')
 
 describe('isAppModule()', () => {
     it('should recognize local app files', () => {
-        expect(isAppModule('~/app.js')).toBe(true)
+        expect(isAppModule('&/app.js')).toBe(true)
     })
     it('should ignore named modules', () => {
         expect(isAppModule('app')).toBe(false)
@@ -42,7 +42,7 @@ describe('isPackage()', () => {
         expect(isPackage('app/file.js')).toBe(true)
     })
     it('should recognize local app files', () => {
-        expect(isPackage('~/app.js')).toBe(true)
+        expect(isPackage('&/app.js')).toBe(true)
     })
     it('should ignore absolute paths', () => {
         expect(isPackage('/app.js')).toBe(false)
@@ -64,7 +64,7 @@ describe('isAbsolutePackage()', () => {
         expect(isAbsolutePackage('app/file.js')).toBe(false)
     })
     it('should ignore local app files', () => {
-        expect(isAbsolutePackage('~/app.js')).toBe(false)
+        expect(isAbsolutePackage('&/app.js')).toBe(false)
     })
     it('should ignore absolute paths', () => {
         expect(isAbsolutePackage('/app.js')).toBe(false)
@@ -80,7 +80,7 @@ describe('isRelativePackage()', () => {
         expect(isRelativePackage('app/file.js')).toBe(true)
     })
     it('should recognize local app files', () => {
-        expect(isRelativePackage('~/app.js')).toBe(true)
+        expect(isRelativePackage('&/app.js')).toBe(true)
     })
     it('should ignore named modules', () => {
         expect(isRelativePackage('app')).toBe(false)
@@ -119,13 +119,13 @@ describe('appendExtension()', () => {
 
 describe('getAppPrefix()', () => {
     it('should return a tilde character', () => {
-        expect(getAppPrefix()).toBe('~')
+        expect(getAppPrefix()).toBe('&')
     })
 })
 
 describe('resolveModuleName()', () => {
     it('should transform app file names into absolute paths', () => {
-        expect(resolveModuleName('~/app.js')).toBe(appModule)
+        expect(resolveModuleName('&/app.js')).toBe(appModule)
     })
     it('should return input when it is an absolute path', () => {
         expect(resolveModuleName('/app.js')).toBe('/app.js')

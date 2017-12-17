@@ -25,7 +25,7 @@ const appNodeModule = join(nodeModulesPath, 'app', 'index.js')
 
 describe('generateModuleID()', () => {
     it('should transform absolute app file', () => {
-        expect(generateModuleID(appModule)).to.equal('~/app.js')
+        expect(generateModuleID(appModule)).to.equal('&/app.js')
     })
     it('should transform absolute node app file', () => {
         expect(generateModuleID(appNodeModule)).to.equal('app/index.js')

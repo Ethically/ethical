@@ -1,6 +1,7 @@
 const root = '../../..'
 const requireHacker = require('require-hacker')
-const { extname } = require('path')
+const { extname, dirname, join } = require('path')
+const { pathExistsSync, readFileSync } = require('fs-extra')
 const {
   browserify,
   unbrowserify
@@ -8,18 +9,20 @@ const {
 const {
     getAppPrefix,
     requireModule,
-    isRelativePackage
+    isRelativePackage,
+    isAbsolutePackage
 } = require(`${root}/helper/resolve`)
 const {
     isRemapped,
     isConflicted,
     getBrowserMap,
     getConflictMap,
-    getModuleRootID
+    getModuleRootID,
+    generateModuleID,
+    resolveModulePath,
+    setProjectRoot
 } = require(`${root}/helper/resolve-node`)
 const { absolute, relative } = require(`${root}/helper/path`)
-const resolveCSSModule = require('./resolve-css.js')
-const resolveJSModule = require('./resolve-js.js')
 
 let moduleID = 0
 const cache = {}
@@ -36,11 +39,20 @@ const resolveMap = (map, modules) => {
     return resolvedMap
 }
 
-const resolveModule = (request, parent) => {
-    if (extname(request) === '.css') {
-        return resolveCSSModule(request, parent)
+const source = (path) => readFileSync(path, 'utf8')
+
+const resolveAlias = (request, id) => {
+    if (isAbsolutePackage(request)) {
+        return id
     }
-    return resolveJSModule(request, parent)
+}
+
+const resolveModule = (request, parent) => {
+    const path = resolveModulePath(request, parent)
+    const id = generateModuleID(path)
+    const alias = resolveAlias(request, id)
+    const key = ( alias ? request : id )
+    return { key, alias, path, source }
 }
 
 const resolveCache = (cached, modules, exclude) => {
@@ -121,14 +133,17 @@ const moduleCapturerMiddleware = async (ctx, next, config) => {
 
     if (ctx.request.path !== '/' + path) return await next()
 
-    const { request: { query: { entry = absolute(main), exclude = '' } } } = ctx
+    const resetProjectRoot = setProjectRoot(module.parent.parent.id)
+
+    const { request: { query } } = ctx
+    const { entry = absolute(main), exclude = '' } = query
 
     browserify()
     const excluded = {}
     exclude.split(',').forEach(id => excluded[id] = 1)
     const releaseModules = captureModules(excluded)
     try {
-        requireModule(entry)
+        requireModule(resolveModulePath(entry))
     } catch (e) {
         console.error(e)
     }
@@ -145,6 +160,8 @@ const moduleCapturerMiddleware = async (ctx, next, config) => {
 
     const browserMap = resolveMap(getBrowserMap(), modules)
     const conflictMap = resolveMap(getConflictMap(), modules)
+
+    resetProjectRoot()
 
     ctx.response.body = JSON.stringify({ browserMap, conflictMap, modules })
     ctx.response.set('Content-Type', 'application/json')

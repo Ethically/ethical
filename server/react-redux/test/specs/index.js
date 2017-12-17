@@ -36,7 +36,7 @@ const beforeScript = `
 const initScript = `
     window.require
         .load('module?exclude=' + window.require.ids.toString())
-        .then(() => setTimeout(() => window.require('~'), 0))
+        .then(() => setTimeout(() => window.require('&'), 0))
         .catch(e => console.error(e))
 `
 describe('htmlMiddleware()', () => {

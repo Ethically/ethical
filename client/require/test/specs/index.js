@@ -3,11 +3,11 @@ import enableBrowserRequire from '../../src/index.js'
 const data = {
         modules: [{
             id: 0,
-            key: '~/test/files/dist/a.js',
+            key: '&/test/files/dist/a.js',
             source: '\'use strict\';\n\nmodule.exports = require(\'./b.js\');'
         }, {
             id: 1,
-            key: '~/test/files/dist/b.js',
+            key: '&/test/files/dist/b.js',
             source: '\'use strict\';\n\nrequire(\'ethical-noop-module-browser\');\n\nmodule.exports = require(\'./c.js\');'
         }, {
             id: 2,
@@ -20,7 +20,7 @@ const data = {
             source: 'module.exports = \'@ethical-noop-module-browser/browser/file.js\'\n'
         }, {
             id: 4,
-            key: '~/test/files/dist/c.js',
+            key: '&/test/files/dist/c.js',
             source: '\'use strict\';\n\nrequire(\'ethical-noop-module-browser\');\n\nmodule.exports = require(\'ethical-noop-module-browser/relative\');'
         }, {
             id: 5,
@@ -39,7 +39,7 @@ describe('window.require()', () => {
     })
     it('should require modules', () => {
         enableBrowserRequire(data.modules)
-        expect(global.window.require('~/test/files/dist/a.js'))
+        expect(global.window.require('&/test/files/dist/a.js'))
         .toBe('@ethical-noop-module-browser/relative.js')
     })
     it('should require cached module', () => {
@@ -56,11 +56,11 @@ describe('window.require()', () => {
     it('should load and define modules', (done) => {
         enableBrowserRequire()
         const resultObject = {
-            '~/test/files/dist/a.js': jasmine.any(Function),
-            '~/test/files/dist/b.js': jasmine.any(Function),
+            '&/test/files/dist/a.js': jasmine.any(Function),
+            '&/test/files/dist/b.js': jasmine.any(Function),
             'ethical-noop-module-browser': jasmine.any(Function),
             'ethical-noop-module-browser/browser/file.js': jasmine.any(Function),
-            '~/test/files/dist/c.js': jasmine.any(Function),
+            '&/test/files/dist/c.js': jasmine.any(Function),
             'ethical-noop-module-browser/relative.js': jasmine.any(Function)
         }
         const response = { json: () => data }
@@ -92,7 +92,7 @@ describe('window.require()', () => {
     it('should throw module not found error', () => {
         enableBrowserRequire()
         try {
-            global.window.require('~/app.js')
+            global.window.require('&/app.js')
         } catch (e) {
             expect(e.code).toBe('MODULE_NOT_FOUND')
         }

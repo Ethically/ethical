@@ -1,7 +1,7 @@
 const { join } = require('path')
 const { getRequire, requireModule } = require('../../src/index.js')
 
-const testFile = join('~', 'test', 'files', 'a.js')
+const testFile = join('&', 'test', 'files', 'a.js')
 
 const browserRequire = (path) => path
 

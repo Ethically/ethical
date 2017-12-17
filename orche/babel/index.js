@@ -1,29 +1,38 @@
+// const { exit }
 const { transform } = require('babel-core')
 
-const ethicalFileComposerTranspiler = async (ctx, next, opts) => {
+const ethicalFileComposerTranspiler = async (ctx, next, config) => {
 
-    const { file } = ctx
+    const { file, setup } = ctx
     const { contents, path } = file
-    const { babel } = opts
+    const { babel, log } = config
 
     if (typeof babel !== 'object') return await next()
 
-    const config = {
+    const babelConfig = {
         sourceRoot: '.',
         sourceMaps: 'inline',
         sourceFileName: path,
         sourceMapTarget: path,
+        filename: path,
         ...babel
     }
-    const { map, code } = transform(contents, config)
-    file.contents = new Buffer(code)
-    file.map = map && new Buffer(JSON.stringify(map))
+
+    try {
+        const { map, code } = transform(contents, babelConfig)
+        file.contents = new Buffer(code)
+        file.map = map && new Buffer(JSON.stringify(map))
+    } catch (e) {
+        file.error = e
+        log.error(e)
+    }
+
     await next()
 }
 
-const ethicalFileComposerTranspilerInit = (opts = {}) => (
+const ethicalFileComposerTranspilerInit = (config = {}) => (
     async (ctx, next) => (
-        await ethicalFileComposerTranspiler(ctx, next, opts)
+        await ethicalFileComposerTranspiler(ctx, next, config)
     )
 )
 

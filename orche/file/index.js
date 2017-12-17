@@ -7,10 +7,14 @@ const writeFile = (path, content) => {
     writeFileSync(path, content)
 }
 
-const ethicalFileComposerFileSystem = async (ctx, next, opts) => {
-    const { dest, base } = opts
-    const { file: { path, contents, map } } = ctx
+const ethicalFileComposerFileSystem = async (ctx, next, config) => {
+    const { dest, base } = config
+    const { file: { path, contents, map, error } } = ctx
     const destPath = resolveDestPath(path, dest, base)
+
+    if (error) {
+        return await next()
+    }
 
     writeFile(destPath, contents)
 
@@ -22,9 +26,9 @@ const ethicalFileComposerFileSystem = async (ctx, next, opts) => {
     await next()
 }
 
-const ethicalFileComposerFileSystemInit = (opts = {}) => (
+const ethicalFileComposerFileSystemInit = (config = {}) => (
     async (ctx, next) => (
-        await ethicalFileComposerFileSystem(ctx, next, opts)
+        await ethicalFileComposerFileSystem(ctx, next, config)
     )
 )
 

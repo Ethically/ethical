@@ -22,6 +22,23 @@ const browserMap = {}
 const conflictMap = {}
 const warned = {}
 
+const setProjectRoot = (file) => {
+
+    let directories = dirname(file).split('/').slice(1)
+    let packageJSON
+    while (directories.length) {
+        packageJSON = join('/', ...directories, 'package.json')
+        if (pathExistsSync(packageJSON)) {
+            global.ethical = global.ethical || {}
+            global.ethical.cwd = dirname(packageJSON)
+            return () => delete global.ethical.cwd
+        }
+        directories = directories.slice(0, directories.length - 1)
+    }
+
+    throw Error('Could not determine project root!')
+}
+
 const getConflictMap = () => {
     return clone(conflictMap)
 }
@@ -200,7 +217,8 @@ const resolveModulePath = (request, parent) => {
     if (isAbsolutePackage(request)) return resolveNodeModule(request, parent)
     if (isRelativePackage(request)) return resolveNodeModuleFile(request, parent)
     if (isRelative(request)) return resolveRelative(request, parent)
-    return request
+
+    return resolveAmbiguousPath(request)
 }
 
 const getNodeModulesPath = () => (
@@ -233,5 +251,6 @@ module.exports = {
   resolveModulePath,
   getNodeModulesPath,
   getNodeModuleRoot,
-  generateModuleID
+  generateModuleID,
+  setProjectRoot
 }

@@ -6,6 +6,7 @@ browser.plugins = browser.plugins.slice(2)
 const browserFiles = [
     'react/provider',
     'react/promise',
+    'react/socket',
     'react/root'
 ]
 

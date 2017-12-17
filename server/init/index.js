@@ -18,17 +18,13 @@ const ethicalServer = (opts = {}) => {
             return api
         },
         listen: () => new Promise(resolve => {
-            const instance = app.listen(port, () => {
-                serverDestroy(instance)
-                const destroyServer = () => {
-                    return new Promise(resolve => {
-                        const callback = () => {
-                            resolve()
-                        }
-                        return instance.destroy(callback)
-                    })
+            const server = app.listen(port, () => {
+                serverDestroy(server)
+                const destroy = server.destroy
+                server.destroy = () => {
+                    return new Promise(resolve => destroy.call(server, resolve))
                 }
-                resolve(destroyServer)
+                resolve({ app, server })
             })
         })
     }

@@ -4,44 +4,67 @@ const { onExit } = require(`${root}/helper/exit`)
 const startServer = require('./manager')
 
 const state = {
-    destroyServer: undefined,
-    onExitHook: undefined
+    destroyServer: null,
+    onExitHook: null,
+    onError: null,
+    errors: {},
+    io: null
 }
 
-const serverManager = async ({ setup }, next, config) => {
+const serverManager = async (ctx, next, config) => {
+
+    const { path: server, log, io } = config
+    const { setup, file: { path, error } } = ctx
+
+    await state.onExitHook()
+
+    if (error) {
+        state.errors[path] = error
+        return await next()
+    }
+
+    if (state.errors[path]) {
+        delete state.errors[path]
+    }
 
     if (setup) {
         return
     }
 
-    const { path } = config
-
-    if (state.destroyServer) {
-        await state.onExitHook()
-    }
-
-    const file = absolute(path)
-    const onError = async (e) => {
-        console.error(e)
-        delete state.destroyServer
-    }
+    const file = absolute(server)
 
     try {
+        log.info('Starting server...')
+        if (Object.keys(state.errors).length) {
+            log.warn('Unresolved errors pending:')
+            Object.values(state.errors).forEach((e) => log.error(e))
+        }
+        const { onError } = state
         state.destroyServer = await startServer({ file, onError })
+        if (io) {
+            io.send('SERVER_START')
+        }
     } catch (e) {
-        console.error(e)
+        log.error(e)
     }
 
-    if (state.onExitHook) {
-        return await next()
-    }
+    await next()
+}
 
-    state.onExitHook = async () => {
+const serverManagerInit = (config = {}) => {
+
+    const { log, io } = config
+
+    state.onExitHook =  async () => {
         if (state.destroyServer) {
             try {
+                if (io) {
+                    io.send('SERVER_STOP')
+                }
+                log.info('Detroying server...')
                 await state.destroyServer()
             } catch (e) {
-                console.error(e)
+                log.error(e)
             }
             delete state.destroyServer
         }
@@ -49,13 +72,17 @@ const serverManager = async ({ setup }, next, config) => {
 
     onExit(state.onExitHook)
 
-    await next()
-}
+    state.onError = async (e) => {
+        if (io) {
+            io.send('SERVER_STOP')
+        }
+        log.error(e)
+        delete state.destroyServer
+    }
 
-const serverManagerInit = (config = {}) => (
-    async (ctx, next) => (
+    return async (ctx, next) => (
         await serverManager(ctx, next, config)
     )
-)
+}
 
 module.exports = serverManagerInit

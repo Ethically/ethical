@@ -52,7 +52,7 @@ describe('isRelative()', () => {
         expect(isRelative('app/file.js')).toBe(false)
     })
     it('should ignore local app files', () => {
-        expect(isRelative('~/app.js')).toBe(false)
+        expect(isRelative('&/app.js')).toBe(false)
     })
     it('should ignore absolute paths', () => {
         expect(isRelative('/app.js')).toBe(false)
@@ -70,7 +70,7 @@ describe('isAbsolute()', () => {
         expect(isAbsolute('app/file.js')).toBe(false)
     })
     it('should ignore local app files', () => {
-        expect(isAbsolute('~/app.js')).toBe(false)
+        expect(isAbsolute('&/app.js')).toBe(false)
     })
     it('should ignore relative paths', () => {
         expect(isAbsolute('./app.js')).toBe(false)

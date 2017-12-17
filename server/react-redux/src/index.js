@@ -1,4 +1,5 @@
 const root = '../../..'
+const { setProjectRoot } = require(`${root}/helper/resolve-node`)
 const { absolute } = require(`${root}/helper/path`)
 const createPromiseCollector = require(`${root}/helper/collect`)
 const { default: PromiseProvider } = require(`${root}/react/provider`)
@@ -18,11 +19,9 @@ const reactReduxMiddleware = async (ctx, next, config) => {
         return await next()
     }
 
-    const { routes, layout, reducers, graphqlSchema, graphqlRoot } = config
+    const {  Layout, Routes, reducer, graphqlSchema, graphqlRoot } = config
     const { url } = request
-    const { default: Layout } = require(absolute(layout))
-    const { default: Routes } = require(absolute(routes))
-    const { default: reducer } = require(absolute(reducers))
+
     const promise = createPromiseCollector()
     const store = createStore(combineReducers(reducer))
     const html = await renderRoute({ url, Routes, store, promise })
@@ -44,10 +43,6 @@ const reactReduxMiddleware = async (ctx, next, config) => {
     await next()
 }
 
-const reactReduxMiddlewareInit = (config) => (
-    async (ctx, next) => await reactReduxMiddleware(ctx, next, config)
-)
-
 const renderRoute = async (context) => {
     const router = {}
     const html = await renderReactComponents({ ...context, router })
@@ -65,13 +60,16 @@ const renderReactComponents = async (context) => {
         <PromiseProvider promise={promise}>
             <Provider store={store}>
                 <StaticRouter context={router} location={url}>
-                    {/* {Routes} */}
+                    {Routes}
                 </StaticRouter>
             </Provider>
         </PromiseProvider>
     )
 
+    const resetProjectRoot = setProjectRoot(module.parent.parent.id)
     const html = render()
+    resetProjectRoot()
+
     const promises = promise()
     const { length } = promises
     if (length === 0) {
@@ -79,11 +77,40 @@ const renderReactComponents = async (context) => {
     }
 
     await Promise.all(promises)
-    return render()
+
+    const resetProjectRootAgain = setProjectRoot(module.parent.parent.id)
+    const final = render()
+    resetProjectRootAgain()
+
+    return final
 }
 
 const renderLayout = (Layout, props) => renderToStaticMarkup(
     <Layout { ...{ ...props} } />
 )
+
+const bootstrap = (config) => {
+
+    const resetProjectRoot = setProjectRoot(module.parent.parent.id)
+
+    const { routes, layout, reducers, ...other } = config
+
+    const { default: Layout } = require(absolute(layout))
+    const { default: Routes } = require(absolute(routes))
+    const { default: reducer } = require(absolute(reducers))
+
+    resetProjectRoot()
+
+    return { Layout, Routes, reducer, ...other }
+}
+
+const reactReduxMiddlewareInit = (config) => {
+    const resolvedConfig = bootstrap(config)
+    return (
+        async (ctx, next) => (
+            await reactReduxMiddleware(ctx, next, resolvedConfig)
+        )
+    )
+}
 
 module.exports = reactReduxMiddlewareInit

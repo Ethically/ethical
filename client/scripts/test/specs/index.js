@@ -4,7 +4,7 @@ import { getAppPrefix } from 'ethical-utility-resolve-module'
 import getInitScripts from '../../src/index.js'
 
 const app = getAppPrefix()
-const entry = '~/dist/browser/entry.js'
+const entry = '&/dist/browser/entry.js'
 const scriptRoot = '/node_modules/ethical-scripts-frontend/dist/'
 const beforeScript = `
     window.global = window

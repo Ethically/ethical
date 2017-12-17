@@ -30,7 +30,9 @@ const relative = (path) => {
     return path.replace(getRootPath() + '/' , '')
 }
 
-const getRootPath = () => process.cwd()
+const getRootPath = () => (
+    (global.ethical && global.ethical.cwd) || process.cwd()
+)
 
 exports.isFile = isFile
 exports.resolveDestPath = resolveDestPath

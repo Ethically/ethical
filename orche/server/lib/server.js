@@ -1,15 +1,15 @@
 const root = '../../..'
 const { exit } = require(`${root}/helper/exit`)
 
-const state = { destroyServer: null }
+const state = { server: null }
 
 const manageServer = async ({ action, file }) => {
 
     if (action === 'SERVER_START') {
         try {
-            const server = require(file)
-            const instance = await server
-            state.destroyServer = instance
+            const server = require(file).default
+            const { server: instance } = await server
+            state.server = instance
         } catch (e) {
             console.error(e)
             exit(1)
@@ -18,7 +18,7 @@ const manageServer = async ({ action, file }) => {
     }
 
     if (action === 'SERVER_STOP') {
-        await state.destroyServer()
+        await state.server.destroy()
         exit()
     }
 }

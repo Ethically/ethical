@@ -11,12 +11,12 @@ let data = {
     "conflictMap": {},
     "modules": [{
             id: 0,
-            key: '~/test/files/js/a.js',
+            key: '&/test/files/js/a.js',
             source: '\'use strict\';\n\nrequire(\'./b.js\');\n\nconst value = require(\'test/files/css/file.css\');\n\nif (value !== \'"css"\') {\n    throw new Error(\'CSS is not being properly resolved!\');\n}'
         },
         {
             id: 1,
-            key: '~/test/files/js/b.js',
+            key: '&/test/files/js/b.js',
             source: '\'use strict\';\n\nrequire(\'ethical-noop-module-browser\');\n\nrequire(\'./c.js\');'
         },
         {
@@ -32,7 +32,7 @@ let data = {
         },
         {
             id: 4,
-            key: '~/test/files/js/c.js',
+            key: '&/test/files/js/c.js',
             source: '\'use strict\';\n\nrequire(\'ethical-noop-module-browser\');\n\nrequire(\'ethical-noop-module-browser/relative.js\');'
         },
         {
@@ -76,7 +76,7 @@ describe('moduleCapturerMiddleware()', () => {
 
     it('should capture modules', () => {
         const request = async () => {
-            const entry = '~/test/files/js/a.js'
+            const entry = '&/test/files/js/a.js'
             const url = `${host}/module?entry=${entry}`
             const response = await fetch(url)
             const body = await response.json()
@@ -86,7 +86,7 @@ describe('moduleCapturerMiddleware()', () => {
     })
     it('should capture modules with exclusions', () => {
         const request = async () => {
-            const entry = '~/test/files/js/a.js'
+            const entry = '&/test/files/js/a.js'
             const url = `${host}/module?entry=${entry}&exclude=1`
             const response = await fetch(url)
             const body = await response.json()
@@ -103,7 +103,7 @@ describe('moduleCapturerMiddleware()', () => {
             console.error = consoleError
         }
         const request = async () => {
-            const entry = '~/test/files/js/noop.js'
+            const entry = '&/test/files/js/noop.js'
             const url = `${host}/module?entry=${entry}`
             const response = await fetch(url)
             const body = await response.json()
@@ -122,7 +122,7 @@ describe('moduleCapturerMiddleware()', () => {
             console.error = consoleError
         }
         const request = async () => {
-            const entry = '~/test/files/js/problematic.js'
+            const entry = '&/test/files/js/problematic.js'
             const url = `${host}/module?entry=${entry}`
             const response = await fetch(url)
             const body = await response.json()
@@ -131,7 +131,7 @@ describe('moduleCapturerMiddleware()', () => {
                 conflictMap: {},
                 modules: [{
                     id: 7,
-                    key: "~/test/files/js/problematic.js",
+                    key: "&/test/files/js/problematic.js",
                     source: "'use strict';\n\nSomeProblematicVariable = 'Hello';"
                 }]
             })
@@ -141,9 +141,9 @@ describe('moduleCapturerMiddleware()', () => {
     it('should capture main module if entry is omitted', () => {
         const modules = [{
             id: 8,
-            key: '~',
+            key: '&',
             source: '"use strict";',
-            alias: '~/test/files/js/main.js'
+            alias: '&/test/files/js/main.js'
         }]
         const request = async () => {
             const url = `${host}/module`
@@ -161,9 +161,9 @@ describe('moduleCapturerMiddleware()', () => {
     it('should accept a custom endpoint path', () => {
         const modules = [{
             id: 8,
-            key: '~',
+            key: '&',
             source: '"use strict";',
-            alias: '~/test/files/js/main.js'
+            alias: '&/test/files/js/main.js'
         }]
         const request = async () => {
             const url = `${host}/custom`
@@ -195,7 +195,7 @@ describe('moduleCapturerMiddleware()', () => {
             "modules": [
                 {
                     "id": 9,
-                    "key": "~/test/files/js/conflict.js",
+                    "key": "&/test/files/js/conflict.js",
                     "source": "'use strict';\n\nrequire('ethical-noop-module-conflict');"
                 },
                 {
@@ -222,7 +222,7 @@ describe('moduleCapturerMiddleware()', () => {
             ]
         }
         const request = async () => {
-            const entry = '~/test/files/js/conflict.js'
+            const entry = '&/test/files/js/conflict.js'
             const url = `${host}/module?entry=${entry}`
             const response = await fetch(url)
             const body = await response.json()
@@ -237,7 +237,7 @@ describe('moduleCapturerMiddleware()', () => {
             await next()
         }
         const request = async () => {
-            const entry = '~/test/files/js/a.js'
+            const entry = '&/test/files/js/a.js'
             const url = `${host}/module?entry=${entry}`
             const response = await fetch(url)
             const text = await response.text()
@@ -253,7 +253,7 @@ describe('moduleCapturerMiddleware()', () => {
             await next()
         }
         const request = async () => {
-            const entry = '~/test/files/js/a.js'
+            const entry = '&/test/files/js/a.js'
             const url = `${host}/noop`
             const response = await fetch(url)
             const text = await response.text()

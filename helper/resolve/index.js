@@ -26,7 +26,7 @@ const resolveAmbiguousPath = (path) => {
     return path
 }
 
-const getAppPrefix = (moduleName) => '~'
+const getAppPrefix = (moduleName) => '&'
 
 const isAppModule = (moduleName) => (
     moduleName.charAt(0) === getAppPrefix()
