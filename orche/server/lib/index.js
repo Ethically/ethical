@@ -76,7 +76,7 @@ const serverManagerInit = (config = {}) => {
         if (io) {
             io.send('SERVER_STOP')
         }
-        log.error(e)
+        log.error(e.message)
         delete state.destroyServer
     }
 
