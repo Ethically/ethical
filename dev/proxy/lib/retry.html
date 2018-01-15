@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title>Ethical Dev Server</title>
+    </head>
+    <body>
+        <div>Could not restart App server.</div>
+        <div>Please check the logs for errors.</div>
+        <div id="status">
+            Refreshing in <span id="seconds">5</span> seconds...
+        </div>
+        <script>
+            const element = document.getElementById('seconds')
+            let seconds = 5
+            const interval = setInterval(() => {
+                if (seconds === 0) {
+                    const status = document.getElementById('status')
+                    status.textContent = 'Checking server status again...'
+                    clearInterval(interval)
+                    return location.reload()
+                }
+                element.textContent = --seconds
+            }, 1000)
+        </script>
+    </body>
+</html>

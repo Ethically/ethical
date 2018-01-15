@@ -15,7 +15,7 @@ const ethicalServer = (config = {}) => {
                 try {
                     await middleware(ctx, next)
                 } catch (err) {
-                    log.error({ err, message: `Middleware (${middleware})` })
+                    log.error(err)
                     process.exit(1)
                 }
             }
