@@ -1,18 +1,31 @@
-const { delegates, mocks } = require('mock-browser')
+const { JSDOM } = require('jsdom')
+const url = require('url')
 
-const { MockBrowser } = mocks
-const { AbstractBrowser } = delegates
+const browserify = (request = {}) => {
 
-const browserify = () => {
-    const window = MockBrowser.createWindow()
-    const browser = new AbstractBrowser({ window })
-    global.window = browser.getWindow()
-    global.document = browser.getDocument()
-    global.location = browser.getLocation()
-    global.navigator = browser.getNavigator()
-    global.history = browser.getHistory()
-    global.localStorage = browser.getLocalStorage()
-    global.sessionStorage = browser.getSessionStorage()
+    const { headers = {} } = request
+    const {
+        'user-agent': userAgent = 'NOT_SUPPLIED',
+        'referer': referer
+    } = headers
+    const html = `<body><ethical-root></ethical-root></body>`
+    const config = {
+        url: 'http://localhost:8080/',
+        userAgent
+    }
+    const { window } = new JSDOM(html, config)
+
+    global.window = window
+    global.document = window.document
+    global.location = window.location
+    global.navigator = window.navigator
+    global.history = window.history
+    global.localStorage = window.localStorage
+    global.sessionStorage = window.sessionStorage
+
+    global.history.pushState(
+        {}, 'Default Title', referer && url.parse(referer).pathname
+    )
 }
 
 const unbrowserify = () => {

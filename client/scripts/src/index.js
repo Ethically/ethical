@@ -8,7 +8,7 @@ const app = getAppPrefix()
 const scriptPath = '/node_modules/ethical/client/init/dist/'
 const initScript = `
     window.require
-        .load('module?exclude=' + window.require.ids.toString())
+        .load()
         .then(() => setTimeout(() => window.require('${app}'), 0))
         .catch(e => console.error(e))
 `

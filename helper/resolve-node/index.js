@@ -10,6 +10,7 @@ const {
     isAbsolutePackage,
     isRelativePackage,
     isAppModule,
+    resolveAppModule,
     extensions
 } = require(`${root}/helper/resolve`)
 const { readFileSync } = require('fs')
@@ -214,6 +215,7 @@ const resolveNodeModule = (request, parent) => {
 }
 
 const resolveModulePath = (request, parent) => {
+    if (isAppModule(request)) return resolveAppModule(request)
     if (isAbsolutePackage(request)) return resolveNodeModule(request, parent)
     if (isRelativePackage(request)) return resolveNodeModuleFile(request, parent)
     if (isRelative(request)) return resolveRelative(request, parent)

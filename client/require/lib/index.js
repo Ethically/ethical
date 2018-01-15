@@ -31,16 +31,24 @@ const enableBrowserRequire = (modules) => {
         )
         require.define(key, wrappedModule)
     }
-    require.load = (url) => (
-        window.fetch(url)
-        .then(response => response.json())
-        .then(({ browserMap, conflictMap, modules }) => {
-            require.browserMap = extend(require.browserMap, browserMap)
-            require.conflictMap = extend(require.conflictMap, conflictMap)
-            evalModules(modules)
-        })
-        .catch(e => console.error(e))
-    )
+    require.load = (entry, options = {}) => {
+
+        const { url = 'module' } = options
+        const { ids: exclude } = require
+        const headers = { 'Content-Type': 'application/json' }
+        const body = JSON.stringify({ entry, exclude })
+        const config = { method: 'POST', headers, body, ...options }
+        return (
+            window.fetch(url, config)
+            .then(response => response.json())
+            .then(({ browserMap, conflictMap, modules }) => {
+                require.browserMap = extend(require.browserMap, browserMap)
+                require.conflictMap = extend(require.conflictMap, conflictMap)
+                evalModules(modules)
+            })
+            .catch(e => console.error(e))
+        )
+    }
 
     window.require = require
 

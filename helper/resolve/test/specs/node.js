@@ -7,7 +7,7 @@ const {
     isRelativePackage,
     appendExtension,
     getAppPrefix,
-    resolveModuleName,
+    resolveAppModule,
     getRequire,
     requireModule
 } = require('../../index.js')
@@ -123,22 +123,22 @@ describe('getAppPrefix()', () => {
     })
 })
 
-describe('resolveModuleName()', () => {
+describe('resolveAppModule()', () => {
     it('should transform app file names into absolute paths', () => {
-        expect(resolveModuleName('&/app.js')).toBe(appModule)
+        expect(resolveAppModule('&/app.js')).toBe(appModule)
     })
     it('should return input when it is an absolute path', () => {
-        expect(resolveModuleName('/app.js')).toBe('/app.js')
+        expect(resolveAppModule('/app.js')).toBe('/app.js')
     })
     it('should return input when it is a named module', () => {
-        expect(resolveModuleName('app')).toBe('app')
+        expect(resolveAppModule('app')).toBe('app')
     })
     it('should return input when it is a relative named module', () => {
-        expect(resolveModuleName('app/file.js')).toBe('app/file.js')
+        expect(resolveAppModule('app/file.js')).toBe('app/file.js')
     })
     it('should return absolute paths when it is a relative path', () => {
-        expect(resolveModuleName('./app.js')).toBe(appModule)
-        expect(resolveModuleName(`../${name}/app.js`)).toBe(appModule)
+        expect(resolveAppModule('./app.js')).toBe(appModule)
+        expect(resolveAppModule(`../${name}/app.js`)).toBe(appModule)
     })
 })
 

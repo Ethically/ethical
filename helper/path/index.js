@@ -1,4 +1,4 @@
-const { join, basename } = require('path')
+const { join, basename } = require('path-browserify')
 
 const isFile = (path) => ( basename(path).includes('.') )
 

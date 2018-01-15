@@ -1,30 +1,8 @@
 const isNode = require('../../helper/is-node')
 const { isRelative, isAbsolute, getRootPath } = require('../../helper/path')
-const { join, resolve, dirname } = require('path')
+const { join } = require('path-browserify')
 
 const extensions = ['js', 'json', 'node']
-
-const resolveAmbiguousPath = (path) => {
-
-    if (extensions.includes(extname(path))) {
-        return path
-    }
-
-    const extension = extensions.find(extension => (
-        pathExistsSync(appendExtension(path, extension))
-    ))
-
-    if (extension) {
-        return appendExtension(path, extension)
-    }
-
-    const index = join(path, 'index.js')
-    if (pathExistsSync(index)) {
-        return index
-    }
-
-    return path
-}
 
 const getAppPrefix = (moduleName) => '&'
 
@@ -60,16 +38,16 @@ const getRequire = () => {
     return window.require
 }
 
-const resolveModuleName = (module) => {
+const resolveAppModule = (module) => {
     if (isAppModule(module)) {
-        return join(getRootPath(), replace(getAppPrefix(), ''))
+        return join(getRootPath(), module.replace(getAppPrefix(), ''))
     }
     if (isRelative(module)) return join(getRootPath(), module)
     return module
 }
 
 const requireModule = (name) => {
-    const path = ( isNode() ? resolveModuleName(name) : name )
+    const path = ( isNode() ? resolveAppModule(name) : name )
     return getRequire()(path)
 }
 
@@ -81,6 +59,5 @@ exports.isAbsolutePackage = isAbsolutePackage
 exports.isRelativePackage = isRelativePackage
 exports.appendExtension = appendExtension
 exports.getRequire = getRequire
-exports.resolveModuleName = resolveModuleName
+exports.resolveAppModule = resolveAppModule
 exports.requireModule = requireModule
-exports.resolveAmbiguousPath = resolveAmbiguousPath
