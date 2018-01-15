@@ -27,6 +27,21 @@ const { absolute, relative } = require(`${root}/helper/path`)
 let moduleID = 0
 const cache = {}
 
+const resolveSourceMap = (source, path) => {
+    const comment = '//# sourceMappingURL='
+    if (source.includes(comment)) {
+        return source
+    }
+    const file = path.replace(process.cwd(), '')
+    const sourceMap = {
+        version : 3,
+        file,
+        sources: [ file ]
+    }
+    const base64 = new Buffer(JSON.stringify(sourceMap)).toString('base64')
+    return source + '\n' + comment + 'data:application/json;base64,' + base64
+}
+
 const resolveMap = (map, modules) => {
     const resolvedMap = {}
     modules.forEach(({ key }) => {
@@ -93,8 +108,9 @@ const handler = (modules, exclude) => (request, { filename: parent }) => {
         return resolveCache(cache[key], modules, exclude)
     }
 
-    const source = getSource(path)
+    const source = resolveSourceMap(getSource(path), path)
     const id =  moduleID++
+
     cache[key] = { id, key, alias, source, path }
 
     return resolveCache(cache[key], modules, exclude)
@@ -120,28 +136,28 @@ const captureModules = (exclude) => {
     }
 }
 
-const decacheNode = () => {
-    Object.keys(require.cache).forEach(key => { delete require.cache[key] })
-    global.__ethical_server_middleware_module_supplier__ = {}
-}
+const moduleSupplierMiddleware = async (ctx, next, config) => {
 
-const moduleCapturerMiddleware = async (ctx, next, config) => {
-
-    if (typeof ctx.response.body !== 'undefined') return await next()
+    if (typeof ctx.response.body !== 'undefined') {
+        return await next()
+    }
 
     const { main, path = 'module' } = config
 
-    if (ctx.request.path !== '/' + path) return await next()
+    if (ctx.request.path !== '/' + path) {
+        return await next()
+    }
 
     const resetProjectRoot = setProjectRoot(module.parent.parent.id)
 
-    const { request: { query } } = ctx
-    const { entry = absolute(main), exclude = '' } = query
+    const { request: { headers, body = {} } } = ctx
+    const { entry = absolute(main), exclude = [] } = body
 
-    browserify()
+    browserify(ctx.request)
     const excluded = {}
-    exclude.split(',').forEach(id => excluded[id] = 1)
+    exclude.forEach(id => excluded[id] = 1)
     const releaseModules = captureModules(excluded)
+
     try {
         requireModule(resolveModulePath(entry))
     } catch (e) {
@@ -169,11 +185,11 @@ const moduleCapturerMiddleware = async (ctx, next, config) => {
     await next()
 }
 
-const moduleCapturerMiddlewareInit = (config = {}) => {
-    decacheNode()
+const moduleSupplierMiddlewareInit = (config = {}) => {
+    global.__ethical_server_middleware_module_supplier__ = {}
     return async (ctx, next) => (
-        await moduleCapturerMiddleware(ctx, next, config)
+        await moduleSupplierMiddleware(ctx, next, config)
     )
 }
 
-module.exports = moduleCapturerMiddlewareInit
+module.exports = moduleSupplierMiddlewareInit
