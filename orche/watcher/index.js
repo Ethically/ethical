@@ -8,7 +8,7 @@ const Vinyl = require('vinyl')
 const { readFileSync, lstatSync } = require('fs-extra')
 const { uniqWith, isEqual } = require('lodash')
 
-const nsfwActions = {
+const NSFW_ACTIONS = {
     0: 'CREATED',
     1: 'DELETED',
     2: 'MODIFIED',
@@ -17,11 +17,18 @@ const nsfwActions = {
 
 const isDirectory = path => lstatSync(path).isDirectory()
 
+const resolveContents = (path, state) => {
+    if (state === 'DELETED' || isDirectory(path)) {
+        return null
+    }
+    return readFileSync(path)
+}
+
 const makeFile = event => {
-    const { action, directory, file } = event
+    const { action, directory, newFile, file = newFile } = event
     const path = join(directory, file)
-    const state = nsfwActions[action]
-    const contents = (isDirectory(path) ? null : readFileSync(path))
+    const state = NSFW_ACTIONS[action]
+    const contents = resolveContents(path, state)
     return new Vinyl({ path, state, contents })
 }
 
@@ -37,7 +44,10 @@ const watcherAPI = (watcher) => {
     }
 }
 
-const normalizeEvents = events => uniqWith(events, isEqual).map(makeFile)
+const normalizeEvents = events => (
+    uniqWith(events, isEqual)
+    .map(makeFile)
+)
 
 const watcher = async (directory, callback) => {
     if (typeof callback !== 'function') {
@@ -47,17 +57,29 @@ const watcher = async (directory, callback) => {
         }
     }
     let chain = Promise.resolve()
-    const watcher = await nsfw(absolute(directory), async events => {
-        normalizeEvents(events).forEach(file => {
+    const watcher = await nsfw(absolute(directory), events => {
+        try{
+            normalizeEvents(events).forEach(file => {
 
-            queue.enqueue(file)
-            chain = (
-                chain
-                .then(() => queue.dequeue())
-                .then(() => callback(file))
-                .catch(e => console.error(e))
-            )
-        })
+                queue.enqueue(file)
+                chain = (
+                    chain
+                    .then(() => queue.dequeue())
+                    .then(() => callback(file))
+                    .catch(e => console.error(e))
+                )
+            })
+        } catch (e) {
+            //
+            //
+            //
+            //
+            //
+            //
+            //
+            //
+            console.error(e)
+        }
     })
     const queue = fileQueue()
     await watcher.start()

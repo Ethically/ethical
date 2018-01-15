@@ -10,8 +10,9 @@ const run = async (tasks, pattern) => {
             return
         }
         const path = files[index]
+        const state = 'MODIFIED'
         const contents = readFileSync(path)
-        const file = new Vinyl({ path, contents })
+        const file = new Vinyl({ path, state, contents })
         const setup = files.length - index - 1
         await tasks({ file, setup })
         await next(index + 1)
