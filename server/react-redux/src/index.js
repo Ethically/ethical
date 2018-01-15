@@ -9,8 +9,38 @@ const { createStore, combineReducers } = require('redux')
 const { Provider } = require('react-redux')
 const { renderToString, renderToStaticMarkup } = require('react-dom/server')
 const { StaticRouter } = require('react-router-dom')
-const { Helmet } = require('react-helmet')
+const { Helmet } = require(`${root}/react/helmet`)
 const { graphql, buildSchema } = require('graphql')
+
+const setGlobals = (request) => {
+
+    if (request) {
+        global.navigator = { userAgent: request.headers['user-agent'] }
+    }
+
+    const resetProjectRoot = setProjectRoot(module.parent.parent.id)
+
+    return () => {
+        resetProjectRoot()
+        delete global.navigator
+    }
+}
+
+const resolveLayoutProps = (html, store) => {
+    const root = <ethical-root dangerouslySetInnerHTML={ { __html: html } } />
+    const scripts = getInitScripts(store.getState())
+    const helmet = Helmet.renderStatic()
+    const props = {
+        html: helmet.htmlAttributes.toComponent(),
+        body: helmet.bodyAttributes.toComponent(),
+        title: helmet.title.toComponent(),
+        meta: helmet.meta.toComponent(),
+        link: helmet.link.toComponent(),
+        scripts,
+        root
+    }
+    return props
+}
 
 const reactReduxMiddleware = async (ctx, next, config) => {
     const { method, request, response } = ctx
@@ -24,19 +54,7 @@ const reactReduxMiddleware = async (ctx, next, config) => {
 
     const promise = createPromiseCollector()
     const store = createStore(combineReducers(reducer))
-    const html = await renderRoute({ url, Routes, store, promise })
-    const root = <ethical-root dangerouslySetInnerHTML={ { __html: html } } />
-    const helmet = Helmet.renderStatic()
-    const scripts = getInitScripts(store.getState())
-    const props = {
-        html: helmet.htmlAttributes.toComponent(),
-        body: helmet.bodyAttributes.toComponent(),
-        title: helmet.title.toComponent(),
-        meta: helmet.meta.toComponent(),
-        link: helmet.link.toComponent(),
-        scripts,
-        root
-    }
+    const props = await renderRoute({ url, Routes, store, promise, request })
 
     response.body = renderLayout(Layout, props)
 
@@ -45,17 +63,17 @@ const reactReduxMiddleware = async (ctx, next, config) => {
 
 const renderRoute = async (context) => {
     const router = {}
-    const html = await renderReactComponents({ ...context, router })
+    const props = await renderReactComponents({ ...context, router })
     const { url } = router
     if (url) {
         return renderRoute({ ...context, url })
     }
-    return html
+    return props
 }
 
 const renderReactComponents = async (context) => {
 
-    const { url, router, Routes, store, promise } = context
+    const { url, router, Routes, store, promise, request } = context
     const render = () => renderToString(
         <PromiseProvider promise={promise}>
             <Provider store={store}>
@@ -66,23 +84,23 @@ const renderReactComponents = async (context) => {
         </PromiseProvider>
     )
 
-    const resetProjectRoot = setProjectRoot(module.parent.parent.id)
+    const resetGlobals = setGlobals(request)
     const html = render()
-    resetProjectRoot()
+    resetGlobals()
 
     const promises = promise()
     const { length } = promises
     if (length === 0) {
-        return html
+        return resolveLayoutProps(html, store)
     }
 
     await Promise.all(promises)
 
-    const resetProjectRootAgain = setProjectRoot(module.parent.parent.id)
+    const resetGlobalsAgain = setGlobals(request)
     const final = render()
-    resetProjectRootAgain()
+    resetGlobalsAgain()
 
-    return final
+    return resolveLayoutProps(final, store)
 }
 
 const renderLayout = (Layout, props) => renderToStaticMarkup(
@@ -91,7 +109,7 @@ const renderLayout = (Layout, props) => renderToStaticMarkup(
 
 const bootstrap = (config) => {
 
-    const resetProjectRoot = setProjectRoot(module.parent.parent.id)
+    const resetGlobals = setGlobals()
 
     const { routes, layout, reducers, ...other } = config
 
@@ -99,7 +117,7 @@ const bootstrap = (config) => {
     const { default: Routes } = require(absolute(routes))
     const { default: reducer } = require(absolute(reducers))
 
-    resetProjectRoot()
+    resetGlobals()
 
     return { Layout, Routes, reducer, ...other }
 }
