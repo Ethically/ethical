@@ -9,11 +9,12 @@ const ethicalFileComposerTranspiler = async (ctx, next, config) => {
 
     if (typeof babel !== 'object') return await next()
 
+    const relativePath = path.replace(process.cwd(), '')
     const babelConfig = {
         sourceRoot: '.',
         sourceMaps: 'inline',
-        sourceFileName: path,
-        sourceMapTarget: path,
+        sourceFileName: relativePath,
+        sourceMapTarget: relativePath,
         filename: path,
         ...babel
     }
