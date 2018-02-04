@@ -6,13 +6,11 @@ const { absolute } = require(`${root}/helper/path`);
 const createPromiseCollector = require(`${root}/helper/collect`);
 const { default: PromiseProvider } = require(`${root}/react/provider`);
 const getInitScripts = require(`${root}/client/scripts`);
+const { Helmet } = require(`${root}/react/helmet`);
 const React = require('react');
-const { createStore, combineReducers } = require('redux');
 const { Provider } = require('react-redux');
 const { renderToString, renderToStaticMarkup } = require('react-dom/server');
 const { StaticRouter } = require('react-router-dom');
-const { Helmet } = require(`${root}/react/helmet`);
-const { graphql, buildSchema } = require('graphql');
 
 const setGlobals = request => {
 
@@ -38,6 +36,9 @@ const resolveLayoutProps = (html, store) => {
         title: helmet.title.toComponent(),
         meta: helmet.meta.toComponent(),
         link: helmet.link.toComponent(),
+        base: helmet.base.toComponent(),
+        style: helmet.style.toComponent(),
+        noscript: helmet.noscript.toComponent(),
         scripts,
         root
     };
