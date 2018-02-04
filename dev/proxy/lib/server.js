@@ -25,7 +25,11 @@ const state = {
     }
 }
 
-const retry = readFileSync(join(__dirname, './retry.html'))
+const reload = readFileSync(join(__dirname, '../../../client/dev/index.js'))
+const retry = (
+    readFileSync(join(__dirname, './retry.html'), 'utf8')
+    .replace('{{WEB_SOCKET}}', reload)
+)
 
 const handleError = (e, req, res) => {
     res.writeHead(500, {
@@ -47,7 +51,7 @@ const delay = (req, res) => (milliseconds) => new Promise((resolve, reject) => {
 const tryApp = (proxy) => async (req, res) => {
     if (!state.serving) {
         try {
-            await delay(req, res)(5000)
+            await delay(req, res)(3000)
         } catch (e) {
             log.warn(e.message)
             return
