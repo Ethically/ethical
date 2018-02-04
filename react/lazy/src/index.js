@@ -5,6 +5,10 @@ import { requireModule, getRequire } from '../../../helper/resolve'
 
 const lazy = (file) => {
 
+    if (!isNode()) {
+        window.require.warmup(file)
+    }
+
     class Lazy extends React.Component {
         state = {
             Component: null,

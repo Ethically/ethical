@@ -29,6 +29,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var lazy = function lazy(file) {
+
+    if (!(0, _isNode2.default)()) {
+        window.require.warmup(file);
+    }
+
     var Lazy = function (_React$Component) {
         _inherits(Lazy, _React$Component);
 
@@ -54,7 +59,6 @@ var lazy = function lazy(file) {
             value: function loadComponent() {
                 var _this2 = this;
 
-                console.log('Loading', file);
                 return (0, _resolve.getRequire)().load(file).then(function () {
                     return _this2.resolveComponent();
                 }).catch(function (e) {
