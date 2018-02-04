@@ -18,22 +18,21 @@ const renameFile = (dest, suffix) => {
 
 const lazy = (opts = {}) => async (ctx, next) => {
 
-
-    const { suffix = '.lazy.js', component = 'ethical/react/lazy' } = opts
-
-    const dest = 'dist'
-    const base = 'src'
     const { file: { path } } = ctx
+    const {
+        suffix = '.lazy.js', component = 'ethical/react/lazy', dest, base
+    } = opts
 
     const destPath = resolveDestPath(path, dest, base)
     renameFile(destPath, suffix)
 
+
     const id = generateModuleID(destPath)
     const content = (
         `var lazy = require('${component}').default\n` +
-        `module.exports = lazy('${id + suffix}')\n`
+        `module.exports = lazy('${id + suffix}')`
     )
-
+    
     writeFile(destPath, content)
 
     await next()
