@@ -27,21 +27,6 @@ const { absolute, relative } = require(`${root}/helper/path`)
 let moduleID = 0
 const cache = {}
 
-const resolveSourceMap = (source, path) => {
-    const comment = '//# sourceMappingURL='
-    if (source.includes(comment)) {
-        return source
-    }
-    const file = path.replace(process.cwd(), '')
-    const sourceMap = {
-        version : 3,
-        file,
-        sources: [ file ]
-    }
-    const base64 = new Buffer(JSON.stringify(sourceMap)).toString('base64')
-    return source + '\n' + comment + 'data:application/json;base64,' + base64
-}
-
 const resolveMap = (map, modules) => {
     const resolvedMap = {}
     modules.forEach(({ key }) => {
@@ -108,7 +93,7 @@ const handler = (modules, exclude) => (request, { filename: parent }) => {
         return resolveCache(cache[key], modules, exclude)
     }
 
-    const source = resolveSourceMap(getSource(path), path)
+    const source = getSource(path)
     const id =  moduleID++
 
     cache[key] = { id, key, alias, source, path }
