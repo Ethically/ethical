@@ -1,6 +1,6 @@
 const root = '../../..'
 const { getAppPrefix } = require(`${root}/helper/resolve`)
-const { join } = require('path')
+const { join } = require('path-browserify')
 const { readFileSync } = require('fs')
 const React = require('react')
 

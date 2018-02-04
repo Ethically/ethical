@@ -1,5 +1,4 @@
 import resolve from 'rollup-plugin-node-resolve'
-import builtins from 'rollup-plugin-node-builtins'
 import uglify from 'rollup-plugin-uglify'
 import commonjs from 'rollup-plugin-commonjs'
 import babel from 'rollup-plugin-babel'
@@ -24,7 +23,6 @@ export default ({
             preferBuiltins: false
         }),
         commonjs(),
-        builtins(),
         uglify()
     ]
 })

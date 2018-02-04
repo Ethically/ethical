@@ -1,4 +1,4 @@
-import { join, resolve, dirname } from 'path'
+import { join, resolve, dirname } from 'path-browserify'
 import {
     isPackage,
     isAbsolutePackage,
