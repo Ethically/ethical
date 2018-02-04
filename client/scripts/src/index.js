@@ -9,7 +9,8 @@ const scriptPath = '/node_modules/ethical/client/init/dist/'
 const initScript = `
     window.require
         .load()
-        .then(() => setTimeout(() => window.require('${app}'), 0))
+        .then(() => window.require('${app}'))
+        .then(() => console.log('Done requiring server rendered modules!'))
         .catch(e => console.error(e))
 `
 const beforeScript = (state) => (`

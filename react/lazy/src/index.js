@@ -12,7 +12,7 @@ const lazy = (file) => {
     class Lazy extends React.Component {
         state = {
             Component: null,
-            loading: null
+            requested: false
         }
         loadComponent() {
             return (
@@ -32,12 +32,13 @@ const lazy = (file) => {
                 Lazy.Component = Component
                 this.setState({ Component })
             } catch (e) {
-                if (!isNode() && e.code === 'MODULE_NOT_FOUND') {
-                    const { loading } = this.state
-                    if (loading === file) {
+                const code = 'MODULE_NOT_FOUND'
+                if (!isNode() && e.code === code) {
+                    const { requested } = this.state
+                    if (requested) {
                         throw e
                     }
-                    this.setState({ loading: file })
+                    this.setState({ requested: true })
                     return this.loadComponent()
                 }
                 throw e

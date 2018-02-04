@@ -9,6 +9,8 @@ import {
 
 const cache = {}
 
+const createLocalRequire = parent => key => window.require(key, parent)
+
 const resolveExports = (file) => {
 
     if (cache[file]) {
@@ -19,42 +21,14 @@ const resolveExports = (file) => {
 
     if (definedModule) {
         const localRequire = createLocalRequire(file)
-        const module = cache[file] = { exports: {} }
+        const module = { exports: {} }
 
         definedModule.call(module.exports, module.exports, localRequire, module)
 
-        return module
+        return cache[file] = module
     }
 
     return null
-}
-
-const load = (request, parent = getAppPrefix()) => {
-    const require = window.require
-    const mapID = getModuleRoot(parent)
-    const remapped = requestMap(require.browserMap, request, mapID)
-    const conflicted = requestMap(require.conflictMap, remapped, mapID)
-    const key = resolveFilename(conflicted, parent)
-
-    for (let i = 0; i < extensions.length; i++) {
-        const file = appendExtension(key, extensions[i])
-        const module = resolveExports(file)
-        if (module) {
-            return module.exports
-        }
-    }
-
-    for (let i = 0; i < extensions.length; i++) {
-        const file = appendExtension(join(key, 'index'), extensions[i])
-        const module = resolveExports(file)
-        if (module) {
-            return module.exports
-        }
-    }
-
-    const error = new Error(`Cannot find module "${key}" from "${parent}"`)
-    error.code = 'MODULE_NOT_FOUND'
-    throw error
 }
 
 const requestMap = (map, request, id) => {
@@ -89,6 +63,39 @@ const resolveFilename = (key, parent) => {
     return join(directory, key)
 }
 
-export { load }
+class ModuleError extends Error {
+    constructor(message, module) {
+        super(message)
+        this.code = 'MODULE_NOT_FOUND'
+        this.module = module
+    }
+}
 
-const createLocalRequire = parent => key => window.require(key, parent)
+const load = (request, parent = getAppPrefix()) => {
+
+    const require = window.require
+    const mapID = getModuleRoot(parent)
+    const remapped = requestMap(require.browserMap, request, mapID)
+    const conflicted = requestMap(require.conflictMap, remapped, mapID)
+    const key = resolveFilename(conflicted, parent)
+
+    for (let i = 0; i < extensions.length; i++) {
+        const file = appendExtension(key, extensions[i])
+        const module = resolveExports(file)
+        if (module) {
+            return module.exports
+        }
+    }
+
+    for (let i = 0; i < extensions.length; i++) {
+        const file = appendExtension(join(key, 'index'), extensions[i])
+        const module = resolveExports(file)
+        if (module) {
+            return module.exports
+        }
+    }
+
+    throw new ModuleError(`Cannot find module "${key}" from "${parent}"`, key)
+}
+
+export { load }
