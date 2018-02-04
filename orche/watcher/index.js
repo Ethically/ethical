@@ -3,91 +3,79 @@ const { absolute } = require(`${root}/helper/path`)
 const { onExit } = require(`${root}/helper/exit`)
 const fileQueue = require(`${root}/helper/queue`)
 const { join } = require('path')
-const nsfw = require('nsfw')
 const Vinyl = require('vinyl')
 const { readFileSync, lstatSync } = require('fs-extra')
 const { uniqWith, isEqual } = require('lodash')
-
-const NSFW_ACTIONS = {
-    0: 'CREATED',
-    1: 'DELETED',
-    2: 'MODIFIED',
-    3: 'RENAMED'
-}
-
-const isDirectory = path => lstatSync(path).isDirectory()
+const watch = require('recursive-watch')
 
 const resolveContents = (path, state) => {
-    if (state === 'DELETED' || isDirectory(path)) {
+    if (state === 'DELETED') {
         return null
     }
     return readFileSync(path)
 }
 
-const makeFile = event => {
-    const { action, directory, newFile, file = newFile } = event
-    const path = join(directory, file)
-    const state = NSFW_ACTIONS[action]
-    const contents = resolveContents(path, state)
-    return new Vinyl({ path, state, contents })
+const makeFile = (path, event) => {
+    const contents = resolveContents(path, event)
+    return new Vinyl({ path, contents, state: event })
 }
 
-const watcherAPI = (watcher) => {
-    let running = true
-    return {
-        stop: async () => {
-            if (running) {
-                await watcher.stop()
-                running = false
-            }
+const detectFileEvent = (file) => {
+    try {
+        const stats = lstatSync(file)
+        if (stats.isDirectory()) {
+            return null
         }
+        return 'MODIFIED'
+    } catch (err) {
+        return 'DELETED'
     }
 }
 
-const normalizeEvents = events => (
-    uniqWith(events, isEqual)
-    .map(makeFile)
-)
-
 const watcher = async (directory, callback) => {
+
     if (typeof callback !== 'function') {
         callback = (file) => {
             const { path, state } = file
             console.log(`File (${path}) has been ${state.toLowerCase()}.`)
         }
     }
-    let chain = Promise.resolve()
-    const watcher = await nsfw(absolute(directory), events => {
-        try{
-            normalizeEvents(events).forEach(file => {
 
-                queue.enqueue(file)
-                chain = (
-                    chain
-                    .then(() => queue.dequeue())
-                    .then(() => callback(file))
-                    .catch(e => console.error(e))
-                )
-            })
-        } catch (e) {
-            //
-            //
-            //
-            //
-            //
-            //
-            //
-            //
-            console.error(e)
-        }
-    })
+    let chain = Promise.resolve()
+
     const queue = fileQueue()
-    await watcher.start()
-    onExit(async () => {
-        await instance.stop()
+    const processing = new Set([])
+
+    const unwatch = watch(absolute(directory), (path) => {
+
+        const event = detectFileEvent(path)
+        const key = path + ':' + event
+
+        if (!['MODIFIED', 'DELETED'].includes(event) || processing.has(key)) {
+            return
+        }
+
+        processing.add(key)
+
+        queue.enqueue(makeFile(path, event))
+
+        chain = (
+            chain
+            .then(() => queue.dequeue())
+            .then(file => {
+                const { path, state } = file
+                processing.delete(path + ':' + state)
+                return callback(file)
+            })
+            .catch(e => console.error(e))
+        )
     })
-    const instance = watcherAPI(watcher)
-    return instance
+
+    onExit(() => {
+        unwatch()
+    })
+
+    return unwatch
 }
 
 module.exports = watcher
