@@ -1,12 +1,13 @@
 {
     "name": "ethical",
-    "version": "0.0.1",
-    "description": "The Ethical framework mono repo.",
+    "version": "0.0.2",
+    "description": "The Ethical Framework — A fullstack JavaScript framework with a moral obligation to keep it simple and scalable.",
     "main": "index.js",
     "scripts": {
         "test": "NODE_ENV=test nyc --all --reporter=text --reporter=html --reporter=cobertura mocha -t 30000  **/*.spec.js",
         "build": "npm run build-client && npm run transpile",
         "build-client": "rollup --config client/init/rollup.dev.js && rollup --config client/init/rollup.prod.js",
+        "prepublish": "npm run build",
         "transpile": "node ./transpile.js"
     },
     "author": "",
@@ -24,6 +25,7 @@
         "fs-promise": "^2.0.3",
         "glob": "^7.1.2",
         "graphql": "^0.11.7",
+        "http-proxy": "^1.16.2",
         "jsdom": "^11.5.1",
         "koa": "^2.4.1",
         "koa-compose": "^4.0.0",
@@ -50,6 +52,7 @@
         "rollup-plugin-uglify": "^2.0.1",
         "server-destroy": "^1.0.1",
         "shallowequal": "^1.0.2",
+        "uws": "^9.14.0",
         "vinyl": "^2.1.0"
     },
     "devDependencies": {
@@ -61,10 +64,8 @@
         "babel-preset-react": "^6.24.1",
         "chai": "^4.1.2",
         "curl": "^0.1.4",
-        "http-proxy": "^1.16.2",
         "mocha": "^4.0.1",
-        "nyc": "^11.3.0",
-        "uws": "^9.14.0"
+        "nyc": "^11.3.0"
     },
     "nyc": {
         "require": [
