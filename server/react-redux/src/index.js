@@ -50,11 +50,11 @@ const reactReduxMiddleware = async (ctx, next, config) => {
         return await next()
     }
 
-    const {  Layout, Routes, reducer, graphqlSchema, graphqlRoot } = config
+    const {  Layout, Routes, createStore, graphqlSchema, graphqlRoot } = config
     const { url } = request
 
     const promise = createPromiseCollector()
-    const store = createStore(combineReducers(reducer))
+    const store = createStore()
     const props = await renderRoute({ url, Routes, store, promise, request })
 
     response.body = renderLayout(Layout, props)
@@ -112,15 +112,15 @@ const bootstrap = (config) => {
 
     const resetGlobals = setGlobals()
 
-    const { routes, layout, reducers, ...other } = config
+    const { routes, layout, store, ...other } = config
 
     const { default: Layout } = require(absolute(layout))
     const { default: Routes } = require(absolute(routes))
-    const { default: reducer } = require(absolute(reducers))
+    const { default: createStore } = require(absolute(store))
 
     resetGlobals()
 
-    return { Layout, Routes, reducer, ...other }
+    return { Layout, Routes, createStore, ...other }
 }
 
 const reactReduxMiddlewareInit = (config) => {
