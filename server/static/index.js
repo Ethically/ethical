@@ -11,11 +11,11 @@ const staticMiddleware = async (ctx, next) => {
     }
 
     try {
-        response.body = await readFile(path.slice(1), 'utf8')
+        response.body = await readFile(path.slice(1))
         response.set('Content-Type', contentType)
-    } catch (e) {}
-
-    await next()
+    } catch (e) {
+        await next()
+    }
 }
 
 const staticMiddlewareInit = (config) => (
